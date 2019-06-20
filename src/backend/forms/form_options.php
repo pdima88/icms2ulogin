@@ -1,11 +1,12 @@
 <?php
 
-namespace pdima88\icms2ulogin\forms;
+namespace pdima88\icms2ulogin\backend\forms;
 
 use cmsForm;
 use cmsCore;
 use fieldString;
 use fieldList;
+use fieldCheckbox;
 
 class form_options extends cmsForm {
 
@@ -19,7 +20,9 @@ class form_options extends cmsForm {
             array(
                 'type' => 'fieldset',
                 'childs' => array(
-
+					new fieldCheckbox('login_form', [
+						'title' => 'Встроить в форму входа',
+					]),
                     new fieldString('uloginid', array(
                         'title' => 'Значение поля <b>uLogin ID</b>',
                         'default' => '',
@@ -36,6 +39,8 @@ class form_options extends cmsForm {
 			                }
 		                )
 	                ),
+
+
 
                 )
             ),

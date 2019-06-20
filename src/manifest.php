@@ -5,14 +5,11 @@ namespace pdima88\icms2ulogin;
 class manifest {
 
 	public function hooks() {
-		return array(
-
-			'hooks' => array(
+		return [
 //		'user_auth_error',
-				'users_profile_view',
-			)
-
-		);
+			'users_profile_view',
+			'login_form_html',
+		];
 	}
 
 

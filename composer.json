@@ -12,6 +12,12 @@
             "email": "pdima88@mail.ru"
         }
     ],
+    "extra": {
+        "assets-files": [
+            "assets\ulogin.css",
+            "assets\ulogin.js",
+        ]
+    },
     "autoload": {
         "psr-4": {
             "pdima88\\icms2ulogin\\": "/src"
