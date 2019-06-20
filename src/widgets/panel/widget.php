@@ -5,10 +5,10 @@ namespace pdima88\icms2ulogin\widgets\panel;
 use cmsWidget;
 use cmsCore;
 use cmsUser;
+use pdima88\icms2ulogin\frontend as ulogin;
 
 class widget extends cmsWidget {
 
-	public static $u_inc;
 	public $is_cacheable = false;
 
     public function run(){
@@ -29,12 +29,10 @@ class widget extends cmsWidget {
 		    $uloginid = '';
 	    }
 
-	    $u_id = 'ulogin_' . $uloginid . '_' . intval(self::$u_inc);
+	    $u_id = 'ulogin_' . $uloginid . '_' . ulogin::$u_inc++;
 
 	    $callback = 'uloginCallback';
 	    $redirect = urlencode(href_to_abs('ulogin','login'));
-
-	    self::$u_inc++;
 
 	    if (empty($uloginid)) {
 		    $this->setTemplate('panel_default');

@@ -1,6 +1,6 @@
 <div class="ulogin_form">
 <?php
-	$this->addCSS( 'templates/default/css/ulogin.css' );
+	$this->addCSS( 'assets/pdima88/icms2ulogin/ulogin.css' );
     $this->addCSS( 'https://ulogin.ru/css/providers.css', false);
 ?>
 

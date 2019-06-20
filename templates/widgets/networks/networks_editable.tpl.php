@@ -3,8 +3,8 @@
 	$this->addJS( 'https://ulogin.ru/js/ulogin.js', null, false);
 	$this->addCSS( 'https://ulogin.ru/css/providers.css', false);
 
-	$this->addJS( 'templates/default/js/ulogin.js' );
-	$this->addCSS( 'templates/default/css/ulogin.css' );
+	$this->addJS( 'assets/pdima88/icms2ulogin/ulogin.js' );
+	$this->addCSS( 'assets/pdima88/icms2ulogin/ulogin.css' );
 ?>
 
 	<?php if ($add_str) { ?>
