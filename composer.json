@@ -14,8 +14,8 @@
     ],
     "extra": {
         "assets-files": [
-            "assets\ulogin.css",
-            "assets\ulogin.js"
+            "assets/ulogin.css",
+            "assets/ulogin.js"
         ]
     },
     "autoload": {
