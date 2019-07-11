@@ -3,8 +3,8 @@
 	$this->addJS( 'https://ulogin.ru/js/ulogin.js', null, false);
 	$this->addCSS( 'https://ulogin.ru/css/providers.css', false);
 
-    $this->addJS( 'assets/pdima88/icms2ulogin/ulogin.js' );
-	$this->addCSS( 'assets/pdima88/icms2ulogin/ulogin.css' );
+    $this->addJS( 'assets/icms2ulogin/ulogin.js' );
+	$this->addCSS( 'assets/icms2ulogin/ulogin.css' );
 ?>
 
 	<?php if ($add_str) { ?>
@@ -22,7 +22,7 @@
 
 		$ulogin_accounts = '';
 		if (is_array( $networks )) {
-			foreach ( $networks as $network ) {
+			foreach ( $networks as $network => $nwdata ) {
 				$ulogin_accounts .= "<div data-ulogin-network='$network' " .
 				                    "class=\"ulogin_provider big_provider " . $network . "_big\" " .
 				                    "onclick=\"uloginDeleteAccount('$network')\"" .

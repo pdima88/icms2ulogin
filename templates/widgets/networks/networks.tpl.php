@@ -1,6 +1,6 @@
 <div class="ulogin_form">
 <?php
-	$this->addCSS( 'assets/pdima88/icms2ulogin/ulogin.css' );
+	$this->addCSS( 'assets/icms2ulogin/ulogin.css' );
     $this->addCSS( 'https://ulogin.ru/css/providers.css', false);
 ?>
 
@@ -8,7 +8,7 @@
 
 		$ulogin_accounts = '';
 		if (is_array( $networks )) {
-			foreach ( $networks as $network ) {
+			foreach ( $networks as $network => $nwdata ) {
 				$ulogin_accounts .= "<div data-ulogin-network='$network' " .
 				                    "class=\"ulogin_provider big_provider " . $network . "_big\"></div>";
 			}

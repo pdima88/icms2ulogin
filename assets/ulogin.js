@@ -85,7 +85,11 @@ function uloginDeleteAccount(network){
                     break;
                 case 'success':
                     var nw = jQuery('.ulogin_accounts').find('[data-ulogin-network='+network+']');
-                    if (nw.length > 0) nw.hide();
+                    if (nw.length > 0) nw.remove();
+                    var networks = jQuery('.ulogin_accounts').find('.ulogin_provider:visible');
+                    if (networks.length == 0) {
+                        jQuery('.ulogin_accounts').parent().find('.delete_str').hide();
+                    }
                     uloginMessage(data.title, data.msg, 'success');
                     break;
             }
@@ -98,8 +102,8 @@ function adduLoginNetworkBlock(networks, title, msg) {
     var uAccounts = jQuery('.ulogin_accounts');
 
     uAccounts.each(function(){
-        for (var uid in networks) {
-            var network = networks[uid],
+        for (var network in networks) {
+            var nwdata = networks[network],
                 uNetwork = jQuery(this).find('[data-ulogin-network='+network+']');
 
             if (uNetwork.length == 0) {
@@ -107,9 +111,25 @@ function adduLoginNetworkBlock(networks, title, msg) {
                 if (jQuery(this).hasClass('can_delete')) {
                     onclick = ' onclick="uloginDeleteAccount(\'' + network + '\')"';
                 }
+
+                var name = '';
+                if (nwdata['first_name'] || nwdata['last_name']) {
+                    if (nwdata['first_name']) name = nwdata['first_name'];
+                    if (nwdata['last_name']) {
+                        if (name) name += ' ';
+                        name += nwdata['last_name'];
+                    }
+                } else if (nwdata['name']) {
+                    name = nwdata['name'];
+                }
+                if (nwdata['email']) {
+                    if (name) name += ' ('+nwdata['email']+')';
+                    else name = nwdata['email'];
+                }
                 jQuery(this).append(
-                    '<div data-ulogin-network="' + network + '" class="ulogin_provider big_provider ' + network + '_big"' + onclick + '></div>'
+                    '<div data-ulogin-network="' + network + '" class="ulogin_provider"' + onclick + '><i class="big_provider '+network+'_big"></i><span>'+name+'</span></div>'
                 );
+                jQuery(this).parent().find('.delete_str').show();
                 uloginMessage(title, msg, 'success');
             } else {
                 if (uNetwork.is(':hidden')) {

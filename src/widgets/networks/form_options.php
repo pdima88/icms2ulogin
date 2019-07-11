@@ -2,6 +2,10 @@
 
 namespace pdima88\icms2ulogin\widgets\networks;
 
+use cmsForm;
+use fieldString;
+use fieldCheckbox;
+
 class form_options extends cmsForm {
 
 	public function init() {

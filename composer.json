@@ -13,6 +13,7 @@
         }
     ],
     "extra": {
+        "assets-target": "icms2ulogin",
         "assets-files": [
             "assets/ulogin.css",
             "assets/ulogin.js"

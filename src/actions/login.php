@@ -9,6 +9,7 @@ use cmsCore;
 use cmsConfig;
 use cmsEventsManager;
 use cmsUploader;
+use cmsModel;
 
 class login extends cmsAction
 {
@@ -306,10 +307,17 @@ class login extends cmsAction
      */
     protected function addUloginAccount($user_id)
     {
+        $name = ($this->u_data['first_name'] ?? '').' '.($this->u_data['last_name'] ?? '');
+        if ($name == ' ') {
+            $name = $this->u_data['name'];
+        }
         $user = $this->model->addUloginAccount(array(
             'user_id' => $user_id,
             'identity' => (string)$this->u_data['identity'],
             'network' => $this->u_data['network'],
+            'name' => $name,
+            'email' => $this->u_data['email'] ?? '',
+            'data' => cmsModel::arrayToYaml($this->u_data),
         ));
 
         if (!$user) {

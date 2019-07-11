@@ -58,7 +58,7 @@ class model extends cmsModel {
 
 
 //--------------------
-	public function getUloginUserNetworks ($user_id = 0) {
+	public function getUloginUserNetworks($user_id = 0) {
 		$this->resetFilters();
 		$this->filterEqual('user_id', $user_id);
 		$q = $this->get('ulogin_user');
@@ -67,7 +67,7 @@ class model extends cmsModel {
 
 		if(is_array($q))
 			foreach ($q as $q0) {
-				$result[] = $q0['network'];
+				$result[$q0['network']] = $q0;
 			}
 
 		return $result;
