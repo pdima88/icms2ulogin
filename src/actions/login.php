@@ -10,9 +10,18 @@ use cmsConfig;
 use cmsEventsManager;
 use cmsUploader;
 use cmsModel;
+use pdima88\icms2ulogin\model;
+use tableUsers;
 
+/**
+ *
+ * @property-read model $model
+ */
 class login extends cmsAction
 {
+    /** Group of users with confirmed emails*/
+    const GROUP_CONFIRMED = 4;
+
     protected $u_data;
     protected $currentUserId;
     protected $_messParam = array();
@@ -99,7 +108,7 @@ class login extends cmsAction
                         return;
                     }
                 } else {
-                    // данные о пользователе есть в ulogin_table, но отсутствуют в modx. Необходимо переписать запись в ulogin_table и в базе modx.
+                    // данные о пользователе есть в ulogin_table, но отсутствуют в таблице пользователей. Необходимо переписать запись в ulogin_table и в базе сайта.
                     $user_id = $this->newUloginAccount($u_user_db);
                 }
 
@@ -143,7 +152,8 @@ class login extends cmsAction
         $u_data = $this->u_data;
 
         if ($u_user_db) {
-            // данные о пользователе есть в ulogin_user, но отсутствуют в modx => удалить их
+            // данные о пользователе есть в ulogin_user, но отсутствуют
+            // в базе пользователей сайта => удалить их
             $this->model->deleteUloginUser($u_user_db['id']);
         }
 
@@ -168,17 +178,17 @@ class login extends cmsAction
             'email' => $u_data['email'],
         ));
 
-        // $check_m_user == true -> есть пользователь с таким email
-        $user_id = 0;
-        $check_m_user = false;
+        $check_m_user = false; // $check_m_user - есть ли пользователь с таким email
+        $user_id = 0; // id юзера с тем же email
+
         if ($CMSuser) {
-            $user_id = $CMSuser['id']; // id юзера с тем же email
+            $user_id = $CMSuser['id'];
             $check_m_user = true;
         }
 
-        // $isLoggedIn == true -> пользователь онлайн
+
+        $isLoggedIn = cmsUser::isLogged(); // $isLoggedIn == true -> пользователь онлайн
         $currentUserId = $this->currentUserId;
-        $isLoggedIn = cmsUser::isLogged();
 
         if (!$check_m_user && !$isLoggedIn) {
             // отсутствует пользователь с таким email в базе -> регистрация в БД
@@ -241,25 +251,32 @@ class login extends cmsAction
 
         $first_name = !empty($u_data['first_name']) ? $u_data['first_name'] : '';
         $last_name = !empty($u_data['last_name']) ? $u_data['last_name'] : '';
-        $nickname = !empty($u_data['nickname']) ? $u_data['nickname'] : '';
         $bdate = !empty($u_data['bdate']) ? $u_data['bdate'] : '';
 
         $CMSuser = array(
             'password1' => $password,
             'password2' => $password,
-            'nickname' => $this->generateNickname($first_name, $last_name, $nickname, $bdate),
+            'nickname' => $last_name.' '.$first_name,
             'email' => $u_data['email'],
             'site' => isset($u_data['profile']) ? $u_data['profile'] : '',
             'phone' => isset($u_data['phone']) ? $u_data['phone'] : '',
+            'fname' => $first_name,
+            'lname' => $last_name,
         );
 
-        $ulogin_group_id = $this->getOptions();
-        $ulogin_group_id = !empty($ulogin_group_id['group_id']) ? $ulogin_group_id['group_id'] : -1;
+        $options = $this->getOptions();
+        $ulogin_group_id = !empty($options['group_id']) ? $options['group_id'] : -1;
 
-        $ulogin_group_id = $ulogin_group_id > 0 ? $ulogin_group_id : $this->model->getUloginGroupId();
+        $ulogin_group_id = (($ulogin_group_id > 0) ? $ulogin_group_id : $this->model->getUloginGroupId());
 
         if ($ulogin_group_id) {
             $CMSuser['groups'] = array($ulogin_group_id);
+        }
+
+        if ($u_data['verified_email'] ?? false) {
+            $CMSuser['email_confirmed'] = now();
+            if (!isset($CMSuser['groups'])) $CMSuser['groups'] = [];
+            $CMSuser['groups'][] = self::GROUP_CONFIRMED;
         }
 
         if ($bdate) {
@@ -327,6 +344,19 @@ class login extends cmsAction
                 'answerType' => 'error'
             ));
             return false;
+        } else {
+            $CMSuser = tableUsers::getById($user_id);
+            if (!$CMSuser->email_confirmed && ($this->u_data['verified_email'] ?? false) &&
+                ($CMSuser->email == ($this->u_data['email'] ?? ''))
+            ) {
+                $groups = $CMSuser->groups;
+                $groups[] = self::GROUP_CONFIRMED;
+                $data = [
+                    'email_confirmed' => now(),
+                    'groups' => $groups
+                ];
+                $this->model_users->updateUser($user_id, $data);
+            }
         }
 
         return true;
@@ -697,195 +727,5 @@ class login extends cmsAction
             return false;
         }
         return true;
-    }
-
-
-    /**
-     * Гнерация логина пользователя
-     * в случае успешного выполнения возвращает уникальный логин пользователя
-     * @param $first_name
-     * @param string $last_name
-     * @param string $nickname
-     * @param string $bdate
-     * @param array $delimiters
-     * @return string
-     */
-    protected function generateNickname($first_name, $last_name = '', $nickname = '', $bdate = '', $delimiters = array(
-        '.',
-        '_'
-    ))
-    {
-        return $first_name . ' ' . $last_name;
-        $delim = array_shift($delimiters);
-
-        $first_name = $this->translitIt($first_name);
-        $first_name_s = $first_name[0];
-
-        $variants = array();
-        if (!empty($nickname)) {
-            $variants[] = $nickname;
-        }
-        $variants[] = $first_name;
-        if (!empty($last_name)) {
-            $last_name = $this->translitIt($last_name);
-            $variants[] = $first_name . $delim . $last_name;
-            $variants[] = $last_name . $delim . $first_name;
-            $variants[] = $first_name_s . $delim . $last_name;
-            $variants[] = $first_name_s . $last_name;
-            $variants[] = $last_name . $delim . $first_name_s;
-            $variants[] = $last_name . $first_name_s;
-        }
-        if (!empty($bdate)) {
-            $date = explode('.', $bdate);
-            $variants[] = $first_name . $date[2];
-            $variants[] = $first_name . $delim . $date[2];
-            $variants[] = $first_name . $date[0] . $date[1];
-            $variants[] = $first_name . $delim . $date[0] . $date[1];
-            $variants[] = $first_name . $delim . $last_name . $date[2];
-            $variants[] = $first_name . $delim . $last_name . $delim . $date[2];
-            $variants[] = $first_name . $delim . $last_name . $date[0] . $date[1];
-            $variants[] = $first_name . $delim . $last_name . $delim . $date[0] . $date[1];
-            $variants[] = $last_name . $delim . $first_name . $date[2];
-            $variants[] = $last_name . $delim . $first_name . $delim . $date[2];
-            $variants[] = $last_name . $delim . $first_name . $date[0] . $date[1];
-            $variants[] = $last_name . $delim . $first_name . $delim . $date[0] . $date[1];
-            $variants[] = $first_name_s . $delim . $last_name . $date[2];
-            $variants[] = $first_name_s . $delim . $last_name . $delim . $date[2];
-            $variants[] = $first_name_s . $delim . $last_name . $date[0] . $date[1];
-            $variants[] = $first_name_s . $delim . $last_name . $delim . $date[0] . $date[1];
-            $variants[] = $last_name . $delim . $first_name_s . $date[2];
-            $variants[] = $last_name . $delim . $first_name_s . $delim . $date[2];
-            $variants[] = $last_name . $delim . $first_name_s . $date[0] . $date[1];
-            $variants[] = $last_name . $delim . $first_name_s . $delim . $date[0] . $date[1];
-            $variants[] = $first_name_s . $last_name . $date[2];
-            $variants[] = $first_name_s . $last_name . $delim . $date[2];
-            $variants[] = $first_name_s . $last_name . $date[0] . $date[1];
-            $variants[] = $first_name_s . $last_name . $delim . $date[0] . $date[1];
-            $variants[] = $last_name . $first_name_s . $date[2];
-            $variants[] = $last_name . $first_name_s . $delim . $date[2];
-            $variants[] = $last_name . $first_name_s . $date[0] . $date[1];
-            $variants[] = $last_name . $first_name_s . $delim . $date[0] . $date[1];
-        }
-        $i = 0;
-
-        $exist = true;
-        while (true) {
-            if ($exist = $this->userExist($variants[$i])) {
-                foreach ($delimiters as $del) {
-                    $replaced = str_replace($delim, $del, $variants[$i]);
-                    if ($replaced !== $variants[$i]) {
-                        $variants[$i] = $replaced;
-                        if (!$exist = $this->userExist($variants[$i])) {
-                            break;
-                        }
-                    }
-                }
-            }
-            if ($i >= count($variants) - 1 || !$exist) {
-                break;
-            }
-            $i++;
-        }
-
-        if ($exist) {
-            while ($exist) {
-                $nickname = $first_name . mt_rand(1, 100000);
-                $exist = $this->userExist($nickname);
-            }
-            return $nickname;
-        }
-
-        return $variants[$i];
-    }
-
-
-    /**
-     * Проверка существует ли пользователь с заданным логином
-     */
-    protected function userExist($login)
-    {
-        if (!$this->model->getUser(array('nickname' => $login))) {
-            return false;
-        }
-        return true;
-    }
-
-
-    /**
-     * Транслит
-     */
-    protected function translitIt($str)
-    {
-        $tr = array(
-            'А' => 'a',
-            'Б' => 'b',
-            'В' => 'v',
-            'Г' => 'g',
-            'Д' => 'd',
-            'Е' => 'e',
-            'Ж' => 'j',
-            'З' => 'z',
-            'И' => 'i',
-            'Й' => 'y',
-            'К' => 'k',
-            'Л' => 'l',
-            'М' => 'm',
-            'Н' => 'n',
-            'О' => 'o',
-            'П' => 'p',
-            'Р' => 'r',
-            'С' => 's',
-            'Т' => 't',
-            'У' => 'u',
-            'Ф' => 'f',
-            'Х' => 'h',
-            'Ц' => 'ts',
-            'Ч' => 'ch',
-            'Ш' => 'sh',
-            'Щ' => 'sch',
-            'Ъ' => '',
-            'Ы' => 'yi',
-            'Ь' => '',
-            'Э' => 'e',
-            'Ю' => 'yu',
-            'Я' => 'ya',
-            'а' => 'a',
-            'б' => 'b',
-            'в' => 'v',
-            'г' => 'g',
-            'д' => 'd',
-            'е' => 'e',
-            'ж' => 'j',
-            'з' => 'z',
-            'и' => 'i',
-            'й' => 'y',
-            'к' => 'k',
-            'л' => 'l',
-            'м' => 'm',
-            'н' => 'n',
-            'о' => 'o',
-            'п' => 'p',
-            'р' => 'r',
-            'с' => 's',
-            'т' => 't',
-            'у' => 'u',
-            'ф' => 'f',
-            'х' => 'h',
-            'ц' => 'ts',
-            'ч' => 'ch',
-            'ш' => 'sh',
-            'щ' => 'sch',
-            'ъ' => 'y',
-            'ы' => 'y',
-            'ь' => '',
-            'э' => 'e',
-            'ю' => 'yu',
-            'я' => 'ya'
-        );
-        if (preg_match('/[^A-Za-z0-9\_\-]/', $str)) {
-            $str = strtr($str, $tr);
-            $str = preg_replace('/[^A-Za-z0-9\_\-\.]/', '', $str);
-        }
-        return $str;
     }
 }
