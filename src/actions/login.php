@@ -355,6 +355,17 @@ class login extends cmsAction
                     'email_confirmed' => now(),
                     'groups' => $groups
                 ];
+                if ($CMSuser['fname'] == '') {
+                    $data['fname'] = $this->u_data['first_name'] ?? '';
+                }
+                if ($CMSuser['lname'] == '') {
+                    $data['lname'] = $this->u_data['last_name'] ?? '';
+                }
+                if ($CMSuser['regstatus'] == tableUsers::REG_STATUS_NEWBIE &&
+                    (!empty($data['fname']) || !empty($data['lname']))
+                ) {
+                    $data['nickname'] = ($this->u_data['first_name'] ?? '').' '.($this->u_data['last_name'] ?? '');
+                }
                 $this->model_users->updateUser($user_id, $data);
             }
         }
