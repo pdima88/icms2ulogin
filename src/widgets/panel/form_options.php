@@ -3,6 +3,7 @@
 namespace pdima88\icms2ulogin\widgets\panel;
 
 use cmsForm;
+use fieldCheckbox;
 use fieldString;
 
 class form_options extends cmsForm {
@@ -24,6 +25,12 @@ class form_options extends cmsForm {
 							'default' => '',
 						)
 					),
+
+					new fieldCheckbox('options:hidden', array(
+						'title' => 'Не показывать',
+						'hint' => 'Только подключить js и css файлы, не показывать сам виджет',
+						'default' => false,
+					)),
 
 				)
 			),

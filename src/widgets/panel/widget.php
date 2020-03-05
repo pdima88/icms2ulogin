@@ -34,11 +34,15 @@ class widget extends cmsWidget {
 	    $callback = 'uloginCallback';
 	    $redirect = urlencode(href_to_abs('ulogin','login'));
 
-	    if (empty($uloginid)) {
-		    $this->setTemplate('panel_default');
-	    } else {
-            $this->setTemplate('panel');
-        }
+		if ($this->getOption('hidden')) {
+			$this->setTemplate('panel_hidden');
+		} else {
+			if (empty($uloginid)) {				
+				$this->setTemplate('panel_default');
+			} else {
+				$this->setTemplate('panel');
+			}
+		}
 
         return array(
 	        'id' => $u_id,
