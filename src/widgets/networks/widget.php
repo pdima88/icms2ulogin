@@ -34,7 +34,6 @@ class widget extends cmsWidget {
 	    $editable = $this->getOption('editable');
 
 	    if ($editable) {
-		    self::$u_inc++;
 
 		    $uloginid = $this->getOption('uloginid');
 
