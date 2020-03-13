@@ -7,5 +7,8 @@
     <?php $this->addCSS( 'assets/icms2ulogin/ulogin.css' ); ?>
 
     <div id="<?php html($id)?>" data-uloginid="<?php html($uloginid);?>" data-ulogin="redirect_uri=<?php html($redirect);?>;callback=<?php html($callback);?>"></div>
+    <script>
+        uLogin.customInit('<?= $id ?>');
+    </script>
 
 </div>

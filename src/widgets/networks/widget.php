@@ -10,7 +10,6 @@ use cmsController;
 
 class widget extends cmsWidget {
 
-	public static $u_inc;
 	public $is_cacheable = false;
 
     public function run(){
@@ -48,7 +47,7 @@ class widget extends cmsWidget {
 			    $uloginid = '';
 		    }
 
-		    $u_id = 'ulogin_' . $uloginid . '_' . intval( self::$u_inc );
+		    $u_id =  uniqid('ulogin_',true);
 
 		    $callback = 'uloginCallback';
 		    $redirect = urlencode(href_to_abs('ulogin','login'));

@@ -5,7 +5,6 @@ namespace pdima88\icms2ulogin\widgets\panel;
 use cmsWidget;
 use cmsCore;
 use cmsUser;
-use pdima88\icms2ulogin\frontend as ulogin;
 
 class widget extends cmsWidget {
 
@@ -29,7 +28,7 @@ class widget extends cmsWidget {
 		    $uloginid = '';
 	    }
 
-	    $u_id = 'ulogin_' . $uloginid . '_' . ulogin::$u_inc++;
+	    $u_id = uniqid('ulogin_',true);
 
 	    $callback = 'uloginCallback';
 	    $redirect = urlencode(href_to_abs('ulogin','login'));
